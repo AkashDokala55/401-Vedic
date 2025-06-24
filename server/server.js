@@ -8,7 +8,7 @@ const connectDB = require('./config/db');
 const upload = require('./cloudConfig');
 const sendSMS=require('./utils/sendSMS');
 const Complaint = require('./models/Complaint');
-const User = require('./models/User');
+const User = require('./models/user');
 const router = express.Router();
 
 const { authenticateUser, authenticateEmployee, authenticateAdmin } = require('./middleware/auth');
