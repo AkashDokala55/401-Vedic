@@ -1,5 +1,5 @@
 const Complaint = require('../models/Complaint');
-const User = require('../models/User');
+const User = require('../models/user');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 
