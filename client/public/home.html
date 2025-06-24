@@ -507,7 +507,7 @@ function openNonAcademicForm() {
   list.innerHTML = '<li>Loading your complaints...</li>';
 
   try {
-    const res = await fetch('http://localhost:5000/api/complaints/my-complaints', {
+    const res = await fetch('https://fixit-backend-cccw.onrender.com/api/complaints/my-complaints', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -563,7 +563,7 @@ function updateSummaryCounts(complaints) {
 
 async function loadFaculty() {
   try {
-    const res = await fetch('http://localhost:5000/api/employee/faculty-list', {
+    const res = await fetch('https://fixit-backend-cccw.onrender.com/api/employee/faculty-list', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('userToken')}`
       }
@@ -595,7 +595,7 @@ async function loadFaculty() {
 
 async function loadNonAcademicFaculty() {
   try {
-    const res = await fetch('http://localhost:5000/api/employee/non-academic-faculty');
+    const res = await fetch('https://fixit-backend-cccw.onrender.com/api/employee/non-academic-faculty');
     const facultyList = await res.json();
 
     const facultyDropdown = document.getElementById('nonAcademicFaculty');
