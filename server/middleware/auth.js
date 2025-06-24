@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Make sure this path is correct
+const User = require('../models/user'); // Make sure this path is correct
 const SECRET_KEY = process.env.JWT_SECRET || 'fixit_secret_key';
 const Employee = require('../models/Employee');
 require('dotenv').config();
