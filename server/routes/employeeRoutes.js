@@ -78,16 +78,11 @@ router.put('/update-status/:id', authenticateEmployee,upload.single('image'), as
     await complaint.save();
 
     // Send email to user
-    await transporter.sendMail({
-      from: 'akashalpha55@gmail.com',
-      to: complaint.userEmail,
-      subject: `FixIt - Complaint ${status}`,
-      text: `Your complaint on ${complaint.domain} is marked as ${status}. Response: ${response || 'N/A'}`,
-      attachments: req.file ? [{
-        filename: req.file.originalname,
-        path: req.file.path
-      }] : []
-    });
+    await sendMail( // <-- Changed from transporter.sendMail
+    complaint.userEmail, // `to` parameter
+    `FixIt - Complaint ${status}`, // `subject` parameter
+    `Your complaint on ${complaint.domain} is marked as ${status}. Response: ${response || 'N/A'} - Regards\n FixIt team`,
+    );
 
     res.json({ message: 'Complaint updated and user notified', complaint });
   } catch (err) {
