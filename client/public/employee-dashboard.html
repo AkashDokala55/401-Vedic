@@ -517,7 +517,7 @@ async function submitStatusUpdate(id, data, isJson = false) {
 
     async function updateStatus(id, status) {
   try {
-    const res = await fetch(`http://localhost:5000/api/employee/update-status/${id}`, {
+    const res = await fetch(`https://fixit-backend-cccw.onrender.com/api/employee/update-status/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
