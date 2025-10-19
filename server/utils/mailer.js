@@ -1,12 +1,10 @@
-// utils/sendMail.js
 const nodemailer = require('nodemailer');
-require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.MAIL_USER,      // yourgmail@gmail.com
-    pass: process.env.MAIL_PASS       // Gmail App Password
+    user: 'akashalpha55@gmail.com',          // your email
+    pass: 'cemh sdkl oufi wncl'             // Gmail App Password
   }
 });
 
@@ -17,7 +15,7 @@ const transporter = nodemailer.createTransport({
  */
 const sendMail = async (to, subject, html) => {
   const mailOptions = {
-    from: `"FixIt Support" <${process.env.MAIL_USER}>`,
+    from: `"FixIt Support" <yourgmail@gmail.com>`,
     to,
     subject,
     html
