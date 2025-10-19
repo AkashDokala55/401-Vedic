@@ -1,7 +1,7 @@
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const sendMail = require('../utils/sendMail'); // ✅ Reuse existing mail sender
+const sendMail = require('../utils/mailer'); // ✅ Reuse existing mail sender
 const SECRET_KEY = process.env.JWT_SECRET;
 
 // =============================
