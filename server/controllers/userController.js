@@ -1,11 +1,11 @@
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const sendEmail = require('../utils/sendEmail'); // ✅ New utility for sending OTP emails
+const sendMail = require('../utils/sendMail'); // ✅ Reuse existing mail sender
 const SECRET_KEY = process.env.JWT_SECRET;
 
 // =============================
-// Signup Controller
+// Signup Controller (Email OTP)
 // =============================
 exports.signup = async (req, res) => {
   const { username, email, password, department } = req.body;
@@ -24,17 +24,28 @@ exports.signup = async (req, res) => {
     const user = new User({
       username,
       email,
-      password, // hashed by schema middleware if implemented
+      password, // hashing handled by schema
       department,
       otp,
       verified: false,
-      otpExpires: Date.now() + 5 * 60 * 1000, // valid for 5 mins
+      otpExpires: Date.now() + 5 * 60 * 1000, // 5 mins validity
     });
 
     await user.save();
 
-    // ✅ Send OTP to user's email
-    await sendEmail(email, 'Verify Your Email OTP', `Your OTP is ${otp}. It expires in 5 minutes.`);
+    // Send Email with OTP
+    const htmlContent = `
+      <div style="font-family:Arial, sans-serif; line-height:1.6;">
+        <h2>Welcome to FixIt, ${username}!</h2>
+        <p>Use the following OTP to verify your account:</p>
+        <h1 style="color:#2e6bff; letter-spacing:3px;">${otp}</h1>
+        <p>This OTP will expire in <strong>5 minutes</strong>.</p>
+        <br/>
+        <p>Thank you,<br/>FixIt Support Team</p>
+      </div>
+    `;
+
+    await sendMail(email, 'Verify your FixIt account', htmlContent);
 
     res.json({ message: 'OTP sent to your email. Please verify.' });
   } catch (err) {
@@ -61,9 +72,9 @@ exports.verifyEmailOtp = async (req, res) => {
     user.otpExpires = null;
     await user.save();
 
-    res.json({ message: 'Email verified. You can now login.' });
+    res.json({ message: 'Email verified successfully. You can now login.' });
   } catch (err) {
-    console.error('Email OTP verification error:', err);
+    console.error('OTP verification error:', err);
     res.status(500).json({ message: 'Verification failed' });
   }
 };
@@ -85,9 +96,20 @@ exports.resendEmailOtp = async (req, res) => {
     user.otpExpires = Date.now() + 5 * 60 * 1000;
     await user.save();
 
-    await sendEmail(email, 'Resend Email OTP', `Your new OTP is ${otp}. It expires in 5 minutes.`);
+    const htmlContent = `
+      <div style="font-family:Arial, sans-serif; line-height:1.6;">
+        <h2>Resend OTP - FixIt</h2>
+        <p>Your new OTP is:</p>
+        <h1 style="color:#2e6bff; letter-spacing:3px;">${otp}</h1>
+        <p>This OTP will expire in <strong>5 minutes</strong>.</p>
+        <br/>
+        <p>Thank you,<br/>FixIt Support Team</p>
+      </div>
+    `;
 
-    res.json({ message: 'OTP resent successfully to your email' });
+    await sendMail(email, 'Your new OTP from FixIt', htmlContent);
+
+    res.json({ message: 'OTP resent successfully to your email.' });
   } catch (err) {
     console.error('Resend OTP error:', err);
     res.status(500).json({ message: 'Could not resend OTP' });
@@ -124,7 +146,7 @@ exports.login = async (req, res) => {
         userId: user._id,
         email: user.email,
         username: user.username,
-        department: user.department,
+        department: user.department
       },
       SECRET_KEY,
       { expiresIn: '2h' }
@@ -133,8 +155,9 @@ exports.login = async (req, res) => {
     res.json({
       token,
       username: user.username,
-      department: user.department,
+      department: user.department
     });
+
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error during login' });
