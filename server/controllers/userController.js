@@ -1,49 +1,56 @@
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const sendSMS = require('../utils/sendSMS');
-const SECRET_KEY=process.env.JWT_SECRET;
-exports.signup = async (req, res) => {
-  const { username, phone, password, email, department } = req.body;
+const sendEmail = require('../utils/sendEmail'); // ✅ New utility for sending OTP emails
+const SECRET_KEY = process.env.JWT_SECRET;
 
-  if (!username || !phone || !password || !email || !department)
+// =============================
+// Signup Controller
+// =============================
+exports.signup = async (req, res) => {
+  const { username, email, password, department } = req.body;
+
+  if (!username || !email || !password || !department)
     return res.status(400).json({ message: 'All fields are required' });
 
   try {
-    const existing = await User.findOne({ phone });
+    const existing = await User.findOne({ email });
     if (existing)
-      return res.status(400).json({ message: 'Phone already registered' });
+      return res.status(400).json({ message: 'Email already registered' });
 
+    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const user = new User({
       username,
       email,
-      phone,
-      password, // 🔥 Don't hash manually — let schema handle it
+      password, // hashed by schema middleware if implemented
       department,
       otp,
       verified: false,
-      otpExpires: Date.now() + 5 * 60 * 1000,
+      otpExpires: Date.now() + 5 * 60 * 1000, // valid for 5 mins
     });
 
     await user.save();
-    await sendSMS(phone, otp);
 
-    res.json({ message: 'OTP sent to your phone. Please verify.' });
+    // ✅ Send OTP to user's email
+    await sendEmail(email, 'Verify Your Email OTP', `Your OTP is ${otp}. It expires in 5 minutes.`);
+
+    res.json({ message: 'OTP sent to your email. Please verify.' });
   } catch (err) {
     console.error('Signup error:', err);
     res.status(500).json({ message: 'Signup failed' });
   }
 };
 
-
-
-exports.verifyOtp = async (req, res) => {
-  const { phone, otp } = req.body;
+// =============================
+// Verify Email OTP Controller
+// =============================
+exports.verifyEmailOtp = async (req, res) => {
+  const { email, otp } = req.body;
 
   try {
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'User not found' });
 
     if (user.otp !== otp || Date.now() > user.otpExpires)
@@ -54,20 +61,23 @@ exports.verifyOtp = async (req, res) => {
     user.otpExpires = null;
     await user.save();
 
-    res.json({ message: 'Phone verified. You can now login.' });
+    res.json({ message: 'Email verified. You can now login.' });
   } catch (err) {
-    console.error('OTP verification error:', err);
+    console.error('Email OTP verification error:', err);
     res.status(500).json({ message: 'Verification failed' });
   }
 };
 
-exports.resendOtp = async (req, res) => {
-  const { phone } = req.body;
+// =============================
+// Resend Email OTP Controller
+// =============================
+exports.resendEmailOtp = async (req, res) => {
+  const { email } = req.body;
 
-  if (!phone) return res.status(400).json({ message: 'Phone number is required' });
+  if (!email) return res.status(400).json({ message: 'Email is required' });
 
   try {
-    const user = await User.findOne({ phone });
+    const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'User not found' });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -75,15 +85,18 @@ exports.resendOtp = async (req, res) => {
     user.otpExpires = Date.now() + 5 * 60 * 1000;
     await user.save();
 
-    await sendSMS(phone, otp);
+    await sendEmail(email, 'Resend Email OTP', `Your new OTP is ${otp}. It expires in 5 minutes.`);
 
-    res.json({ message: 'OTP resent successfully' });
+    res.json({ message: 'OTP resent successfully to your email' });
   } catch (err) {
     console.error('Resend OTP error:', err);
     res.status(500).json({ message: 'Could not resend OTP' });
   }
 };
 
+// =============================
+// Login Controller
+// =============================
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -111,7 +124,7 @@ exports.login = async (req, res) => {
         userId: user._id,
         email: user.email,
         username: user.username,
-        department: user.department
+        department: user.department,
       },
       SECRET_KEY,
       { expiresIn: '2h' }
@@ -120,12 +133,10 @@ exports.login = async (req, res) => {
     res.json({
       token,
       username: user.username,
-      department: user.department
+      department: user.department,
     });
-
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error during login' });
   }
 };
-
