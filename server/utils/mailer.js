@@ -1,24 +1,22 @@
-const nodemailer = require('nodemailer');
+// utils/sendMail.js
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false, // false for port 587
   auth: {
-    user: 'akashalpha55@gmail.com',          // your email
-    pass: 'cemhsdkloufiwncl'             // Gmail App Password
-  }
+    user: "akashdokala7@gmail.com", // same as your Brevo account email
+    pass: "xsmtpsib-a378cbad67d9a93c69263cdfaa917133e49cb07958a537f819884563a91fba11-6yu04O8RWwYjOUDx", // the key value from Brevo
+  },
 });
 
-/**
- * @param {string} to - recipient email
- * @param {string} subject - subject of the mail
- * @param {string} html - HTML content of the mail
- */
 const sendMail = async (to, subject, html) => {
   const mailOptions = {
-    from: `"FixIt Support" <akashalpha55@gmail.com>`,
+    from: `"FixIt Support" <YOUR_BREVO_EMAIL@example.com>`,
     to,
     subject,
-    html
+    html,
   };
 
   try {
