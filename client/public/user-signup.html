@@ -144,7 +144,7 @@
     </p>
   </div>
 
- <script>
+<script>
   const form = document.getElementById("signupForm");
 
   form.addEventListener("submit", async (e) => {
@@ -159,28 +159,28 @@
     };
 
     try {
-      const res = await fetch("const res = await fetch("https://fixit-backend-cccw.onrender.com/api/user/signup", {", {
+      const res = await fetch("https://fixit-backend-cccw.onrender.com/api/user/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
       });
 
       const result = await res.json();
 
       if (res.ok) {
-        // ✅ Store phone in sessionStorage
         sessionStorage.setItem("phone", data.phone);
         alert(result.message || "OTP sent! Please verify.");
-        // ✅ Redirect to verify-otp
         window.location.href = "verify-otp.html";
       } else {
         alert(result.message || "Signup failed.");
       }
+
     } catch (err) {
       console.error(err);
       alert("Error during signup.");
     }
-  });
+
+  });   <!-- 🔥 THIS WAS MISSING -->
 </script>
 
 </body>
